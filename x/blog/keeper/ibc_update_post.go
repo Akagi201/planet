@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/Akagi201/planet/x/blog/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,7 +42,13 @@ func (k Keeper) OnRecvIbcUpdatePostPacket(ctx sdk.Context, packet channeltypes.P
 	}
 
 	// TODO: packet reception logic
-
+	pId, _ := strconv.Atoi(data.PostID)
+	k.SetPost(ctx, types.Post{
+		Id:      uint64(pId),
+		Title:   data.Title,
+		Content: data.Content,
+	})
+	packetAck.Ok = true
 	return packetAck, nil
 }
 
@@ -65,6 +72,14 @@ func (k Keeper) OnAcknowledgementIbcUpdatePostPacket(ctx sdk.Context, packet cha
 		}
 
 		// TODO: successful acknowledgement logic
+		if !packetAck.Ok {
+			return errors.New("fail to update")
+		}
+		k.SetSentPost(ctx,
+			types.SentPost{
+				PostID: data.PostID,
+				Title:  data.Title,
+			})
 
 		return nil
 	default:
@@ -77,6 +92,14 @@ func (k Keeper) OnAcknowledgementIbcUpdatePostPacket(ctx sdk.Context, packet cha
 func (k Keeper) OnTimeoutIbcUpdatePostPacket(ctx sdk.Context, packet channeltypes.Packet, data types.IbcUpdatePostPacketData) error {
 
 	// TODO: packet timeout logic
+	k.AppendTimedoutPost(
+		ctx,
+		types.TimedoutPost{
+			Creator: "", // TODO: add postID field
+			Title:   data.Title,
+			Chain:   packet.DestinationPort + "-" + packet.DestinationChannel,
+		},
+	)
 
 	return nil
 }
