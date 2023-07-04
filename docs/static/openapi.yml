@@ -44435,6 +44435,8 @@ paths:
 definitions:
   akagi201.planet.blog.MsgSendIbcPostResponse:
     type: object
+  akagi201.planet.blog.MsgSendIbcUpdatePostResponse:
+    type: object
   akagi201.planet.blog.Params:
     type: object
     description: Params defines the parameters for the module.
